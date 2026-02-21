@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Memory Recorder Orb</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+</head>
+
+<body style="margin:0">
+<a-scene>
+
+  <!-- SKY -->
+  <a-sky id="sky" color="#0b0f1a"></a-sky>
+
+  <!-- CAMERA + CURSOR -->
+  <a-camera position="0 1.6 4">
+    <a-cursor color="cyan"></a-cursor>
+  </a-camera>
+
+  <!-- LIGHTING -->
+  <a-light type="ambient" intensity="0.6"></a-light>
+  <a-light type="point" position="0 3 3" intensity="1.5"></a-light>
+
+  <!-- TITLE -->
+  <a-text value="Memory Recorder Orb"
+          position="-6 7 -6"
+          color="#FFFFFF"
+          width="6">
+  </a-text>
+
+  <!-- STATUS TEXT -->
+  <a-text id="infoText"
+          value="Click Orb to Load Memory"
+          position="-5.6 6 -5.6"
+          color="#00ffff"
+          width="5">
+  </a-text>
+
+  <!-- ORB -->
+  <a-sphere id="orb"
+            position="0 1 -2"
+            radius="0.5"
+            color="#00ffff"
+            emissive="#00ffff"
+            class="clickable"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 6000"
+            sound="src: https://cdn.aframe.io/basic-guide/audio/backgroundnoise.wav; on: click">
+  </a-sphere>
+
+  <!-- GLOW RING -->
+  <a-ring position="0 1 -2"
+          radius-inner="0.3"
+          radius-outer="0.5"
+          color="#00ffff"
+          opacity="0.4"
+          animation="property: rotation; to: 0 0 360; loop: true; dur: 8000">
+  </a-ring>
+
+  <!-- FLOATING PARTICLES -->
+  <a-entity id="particles"></a-entity>
+
+  <!-- FLOOR -->
+  <a-plane rotation="-90 0 0"
+           width="10"
+           height="10"
+           color="#111">
+  </a-plane>
+
+  <!-- 3D MODEL HOLDER -->
+  <a-entity id="modelContainer" position="0 0 -3"></a-entity>
+
+</a-scene>
+
+<script>
+
+/* MEMORY DATA */
+let memories = [
+ { text:"Memory Loaded: Childhood", color:"#ff4d4d", sky:"#200000", model:"bedroom.glb" },
+ { text:"Memory Loaded: Graduation", color:"#4dff88", sky:"#002b12", model:"graduation_hat.glb" },
+ { text:"Memory Loaded: Vacation", color:"#4db8ff", sky:"#001a33", model:"lets_go_to_the_beach.glb" },
+ { text:"Memory Loaded: Festival", color:"#cc66ff", sky:"#1a0033", model:null } // optional
+];
+
+let index = 0;
+let orb = document.querySelector("#orb");
+let container = document.querySelector("#modelContainer");
+
+/* CLICK EVENT */
+orb.addEventListener("click", function(){
+
+ let memory = memories[index];
+
+ // Change orb color
+ orb.setAttribute("color", memory.color);
+ orb.setAttribute("emissive", memory.color);
+
+ // Change sky
+ document.querySelector("#sky").setAttribute("color", memory.sky);
+
+ // Change status text
+ document.querySelector("#infoText").setAttribute("value", memory.text);
+
+ // Pulse animation
+ orb.setAttribute("animation__scale",
+ "property: scale; to:1.3 1.3 1.3; dir:alternate; dur:300; loop:2");
+
+ // Particle effect
+ spawnParticles(memory.color);
+
+ // Remove previous model
+ container.innerHTML = "";
+
+ // Load 3D model if exists
+ if(memory.model){
+   let model = document.createElement("a-entity");
+   model.setAttribute("gltf-model", memory.model);
+   model.setAttribute("scale", "1 1 1");
+   model.setAttribute("position", "0 0 0");
+   container.appendChild(model);
+ }
+
+ index++;
+ if(index >= memories.length) index = 0;
+
+});
+
+/* PARTICLE EFFECT */
+function spawnParticles(color){
+ let container = document.querySelector("#particles");
+ for(let i=0;i<15;i++){
+   let p = document.createElement("a-sphere");
+   p.setAttribute("radius","0.05");
+   p.setAttribute("color",color);
+   p.setAttribute("position","0 1 -2");
+
+   let x=(Math.random()-0.5)*2;
+   let y=Math.random()*2;
+   let z=(Math.random()-0.5)*2;
+
+   p.setAttribute("animation",
+   `property: position; to:${x} ${y+1} ${z-2}; dur:1500; easing:easeOutQuad`);
+   p.setAttribute("animation__fade",
+   "property: material.opacity; to:0; dur:1500");
+
+   container.appendChild(p);
+   setTimeout(()=>p.remove(),1500);
+ }
+}
+
+</script>
+</body>
+</html>
+
