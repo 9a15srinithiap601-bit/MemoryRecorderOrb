@@ -35,7 +35,7 @@
           width="5">
   </a-text>
 
-  <!-- ORB -->
+  <!-- ORB WITH AUDIO -->
   <a-sphere id="orb"
             position="0 1 -2"
             radius="0.5"
@@ -43,7 +43,7 @@
             emissive="#00ffff"
             class="clickable"
             animation="property: rotation; to: 0 360 0; loop: true; dur: 6000"
-            sound="src: https://cdn.aframe.io/basic-guide/audio/backgroundnoise.wav; on: click">
+            sound="src: url(audio/memory_sound.mp3); on: click; autoplay: false; volume: 1">
   </a-sphere>
 
   <!-- GLOW RING -->
@@ -71,13 +71,12 @@
 </a-scene>
 
 <script>
-
 /* MEMORY DATA */
 let memories = [
- { text:"Memory Loaded: Childhood", color:"#ff4d4d", sky:"#200000", model:"bedroom.glb" },
- { text:"Memory Loaded: Graduation", color:"#4dff88", sky:"#002b12", model:"graduation_hat.glb" },
- { text:"Memory Loaded: Vacation", color:"#4db8ff", sky:"#001a33", model:"lets_go_to_the_beach.glb" },
- { text:"Memory Loaded: Festival", color:"#cc66ff", sky:"#1a0033", model:null } // optional
+ { text:"Memory Loaded: Childhood", color:"#ff4d4d", sky:"#200000", model:"models/scene.gltf" },
+ { text:"Memory Loaded: Graduation", color:"#4dff88", sky:"#002b12", model:"models/graduation_hat.glb" },
+ { text:"Memory Loaded: Vacation", color:"#4db8ff", sky:"#001a33", model:"models/lets_go_to_the_beach_-_b.glb" },
+ { text:"Memory Loaded: Festival", color:"#cc66ff", sky:"#1a0033", model:null }
 ];
 
 let index = 0;
@@ -100,6 +99,7 @@ orb.addEventListener("click", function(){
  document.querySelector("#infoText").setAttribute("value", memory.text);
 
  // Pulse animation
+ orb.removeAttribute("animation__scale");
  orb.setAttribute("animation__scale",
  "property: scale; to:1.3 1.3 1.3; dir:alternate; dur:300; loop:2");
 
@@ -115,7 +115,16 @@ orb.addEventListener("click", function(){
    model.setAttribute("gltf-model", memory.model);
    model.setAttribute("scale", "1 1 1");
    model.setAttribute("position", "0 0 0");
+   
+   // Set initial opacity to 0 for fade-in
+   model.setAttribute("material", "opacity:0; transparent:true");
+   
    container.appendChild(model);
+
+   // Fade-in animation
+   model.addEventListener('model-loaded', () => {
+     model.setAttribute("animation__fadein", "property: material.opacity; to:1; dur:1000; easing: easeInSine");
+   });
  }
 
  index++;
@@ -128,25 +137,24 @@ function spawnParticles(color){
  let container = document.querySelector("#particles");
  for(let i=0;i<15;i++){
    let p = document.createElement("a-sphere");
-   p.setAttribute("radius","0.05");
-   p.setAttribute("color",color);
-   p.setAttribute("position","0 1 -2");
-
    let x=(Math.random()-0.5)*2;
    let y=Math.random()*2;
    let z=(Math.random()-0.5)*2;
 
+   p.setAttribute("radius","0.05");
+   p.setAttribute("position","0 1 -2");
+   p.setAttribute("material", `color:${color}; opacity:1`);
+   
    p.setAttribute("animation",
-   `property: position; to:${x} ${y+1} ${z-2}; dur:1500; easing:easeOutQuad`);
+   `property: position; to:${x} ${y+1} ${z}; dur:1500; easing:easeOutQuad`);
+   
    p.setAttribute("animation__fade",
    "property: material.opacity; to:0; dur:1500");
-
+   
    container.appendChild(p);
    setTimeout(()=>p.remove(),1500);
  }
 }
-
 </script>
 </body>
 </html>
-
